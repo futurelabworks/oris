@@ -2,7 +2,7 @@
 // and plan settings. The plan is recalculated on every change (see lib/study.js).
 import { hasAI } from '../lib/ai.js';
 import { todayKey } from '../lib/defaults.js';
-import { searchUrl, buildQuery } from '../lib/youtube.js';
+import { videoForTopic } from '../lib/lectures.js';
 import {
   buildPlan, feasibility, aiTopicOrder, subjectColor, addDays, niceDay, daysBetween, IMPORTANCE, DAY_NAMES, LEVELS,
 } from '../lib/study.js';
@@ -11,7 +11,7 @@ const KIND_LABEL = { learn: 'Learn', practice: 'Practice', pyq: 'Past questions'
 const hm = (m) => (m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ''}` : `${m}m`);
 
 export function mount(root, ctx) {
-  const { el, state, saveStudy, saveSyllabi, send, toast, open } = ctx;
+  const { el, state, saveStudy, saveSyllabi, send, toast, open, openPlayer } = ctx;
   const body = el('div', { class: 'plan' });
   root.append(body);
   const openMenus = new Set();
@@ -90,7 +90,7 @@ export function mount(root, ctx) {
       el('span', { class: 'plan-min' }, hm(item.minutes)),
       today ? el('div', { class: 'plan-actions' },
         el('button', { class: 'btn small', onclick: () => focusOn(item) }, 'Focus'),
-        item.kind === 'learn' ? el('a', { class: 'btn ghost small', href: searchUrl(buildQuery(topicTitle, sub ? sub.name : '', state.settings.videoLang)), target: '_blank', rel: 'noopener' }, 'Lecture') : null,
+        item.kind === 'learn' ? lectureButton(item, names) : null,
         item.kind === 'pyq' || item.kind === 'mock' || item.kind === 'revise' ? el('button', { class: 'btn ghost small', onclick: () => open('syllabus', { id: item.syllabusId, tab: 'exam' }) }, 'Exam prep') : null,
         item.topicId ? el('button', { class: 'btn ghost small', 'aria-expanded': String(menu), onclick: () => { if (menu) openMenus.delete(item.key); else openMenus.add(item.key); render(); } }, menu ? 'Close' : 'More') : null) : null,
       menu ? el('div', { class: 'plan-menu' },
@@ -98,6 +98,15 @@ export function mount(root, ctx) {
         item.kind === 'learn' ? el('button', { class: 'btn ghost small', onclick: () => resize(item, 30) }, 'Needs more time (+30m)') : null,
         item.kind === 'learn' && item.minutes > 15 ? el('button', { class: 'btn ghost small', onclick: () => resize(item, -15) }, 'Shorter (−15m)') : null,
         el('button', { class: 'btn ghost small', onclick: () => skipTopic(item.topicId, true) }, 'Skip this topic')) : null);
+  }
+
+  // Play the topic's lecture in the Oris player, or go pick one.
+  function lectureButton(item, names) {
+    const t = (names.get(item.topicId) || {}).t;
+    const v = t && state.lectures ? videoForTopic(state.lectures, t) : null;
+    return v
+      ? el('button', { class: 'btn ghost small', onclick: () => openPlayer({ videoId: v.videoId, topicId: item.topicId, syllabusId: item.syllabusId }) }, '▶ Lecture')
+      : el('button', { class: 'btn ghost small', onclick: () => open('lectures') }, 'Find lecture');
   }
 
   function header(plan) {
@@ -233,5 +242,5 @@ export function mount(root, ctx) {
     ].filter(Boolean));
   }
   render();
-  return { update(changed) { if (changed.study || changed.syllabi || changed.settings) render(); } };
+  return { update(changed) { if (changed.study || changed.syllabi || changed.settings || changed.lectures) render(); } };
 }

@@ -1,4 +1,4 @@
-# Oris 3.0 – focus for study, research and earning
+# Oris 3.1 – focus for study, research and earning
 
 A Chrome extension (Manifest V3) that opens in Chrome's side panel.
 
@@ -44,6 +44,26 @@ A Chrome extension (Manifest V3) that opens in Chrome's side panel.
 | --- | --- |
 | Alt+Shift+O (start/pause), Alt+Shift+H (highlight), Alt+Shift+N (quick note) | Any web page. Chrome only assigns these if no other extension already uses the key. Settings → Keyboard shortcuts shows which are set and opens Chrome's shortcuts page to fix the rest. |
 | Space, N, S, R, E, / | Only the Oris New Tab page, after you click the page. Chrome always gives a new tab's address bar the keyboard first, and the page shows a reminder until you click. |
+
+**New in 3.1 (Lectures and the Oris player)**
+
+- **Study → Lectures.** A playlist for every subject: one lecture per topic, in study order (prerequisites first).
+  - **Find lectures for all topics:** Oris picks the best lecture per topic, preferring proper lecture length, real views and approval, with no Shorts or live streams.
+  - **Change:** choose from the top 5, or paste any YouTube link.
+  - **Find a full-course playlist,** or paste a playlist link: Oris puts each video on the topic it matches and lists the rest under "More from the playlist".
+  - **Search:** uses your own YouTube key if you added one, otherwise the Oris server (needs `YOUTUBE_API_KEY` on the server).
+- **The Oris lecture player** (opens in its own tab, no recommendations or comments around the video):
+  - **Notes:** timestamped notes (press N); the video pauses while you type, and clicking a time jumps there.
+  - **Sticky notes:** pinned on the timeline (press P), in 4 colours.
+  - **Playback:** speed 0.75–2× ([ and ]), ±10 s (J and L), A–B loop to rewatch a hard part, full screen (F), resume where you left off.
+  - **Playlist:** the playlist is beside the video, with auto-play of the next lecture after a completed one.
+  - **Practice:** 5 AI questions on the topic and your notes. +5 points per right answer, +10 for a perfect score, only for beating your best (no farming).
+  - **Completion:** a lecture counts as done when you've watched most of it (skipping to the end doesn't count). You get +20 points and the topic is marked learned in your plan and syllabus.
+  - **Notes out:** download them as Markdown with clickable timestamps, or add them to your Oris notes.
+  - **Focus while watching:** starts a focus session; blocking is on, and YouTube still plays inside Oris.
+- **Plan:** a Learn item now shows **▶ Lecture** (opens the player) or **Find lecture**.
+- **Points:** lecture points count towards your level (Earn → Rewards).
+- **How playback works:** YouTube often refuses to play inside extension pages, so the video runs in a tiny relay page on GitHub Pages (`docs/player/` in the repo), with a direct embed as the backup. If neither works, Oris offers "Open on YouTube". YouTube ads play as normal.
 
 **New in 3.0 (Study plan)**
 
@@ -121,6 +141,15 @@ This runs the real code against a mocked `chrome.*` API:
 - the blocked page
 - PDF extraction
 
+**Manual checklist in Chrome, version 3.1:**
+1. Make sure GitHub Pages is on (repo Settings → Pages → main, /docs). Open https://futurelabworks.github.io/oris/player/ ; it should say "This page only works inside the Oris extension".
+2. Reload Oris. Study → **Lectures**. Click **Choose** on a topic, paste any YouTube lecture link → **Use**.
+3. Click the thumbnail. The player opens in a new tab and the video plays. Try Space, J/L, speed, **Loop A** then **B**.
+4. Press N, type a note, press Enter. Press P, write a sticky; a pin appears on the timeline. Click a note's time to jump back.
+5. Watch to near the end (or test with a short video). You get "+20 points" and the topic is ticked in Syllabus and Plan.
+6. Practice tab → **Start practice** (needs Oris AI) → answer 5 questions. Points go up once; retakes only earn more if you beat your best.
+7. Back in Lectures: **Find a full-course playlist** or paste a playlist link → Import. Videos land on matching topics.
+
 **Manual checklist in Chrome, version 3.0:**
 1. Reload Oris. Study → **Plan** → **Make my study plan**. (Or test first run: remove and re-add Oris, answer the 3 questions, then click **Set up my study plan**.)
 2. Step 1: name, choose College, add college and course. Step 2: two subjects with exam dates 2–4 weeks away; set one to High importance.
@@ -141,6 +170,7 @@ This runs the real code against a mocked `chrome.*` API:
 **Server setup (Oris AI and paper search).** In Supabase → project *oris* → Edge Functions → Secrets:
 - `GROQ_API_KEY`: needed for all AI features.
 - `SERPER_API_KEY` (serper.dev, free trial credits) or `BRAVE_API_KEY` (Brave Search API): needed for **Find papers for me**. Without one, Oris shows a plain Google search link instead.
+- `YOUTUBE_API_KEY` (Google Cloud → YouTube Data API v3, free): needed for automatic lecture search and playlist import for everyone without their own key. The free quota (10,000 units a day) covers about 90 lecture searches a day across all users, so heavy users should add their own key in Settings.
 
 **Manual checklist in Chrome, version 2.1:**
 1. Reload Oris. Settings → **AI**: "Use Oris AI" is on. Remove your own Groq key for this test.

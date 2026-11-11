@@ -1,7 +1,7 @@
 # Oris: Chrome Web Store listing (copy and paste)
 
 ## Package
-Upload `oris-3.0.0.zip`. It contains only what Chrome needs, with no tests and no dev files.
+Upload `oris-3.1.0.zip`. It contains only what Chrome needs, with no tests and no dev files.
 
 ## Store listing tab
 
@@ -22,6 +22,11 @@ STUDY PLAN
 • Oris plans every day up to your exams, with most-asked and highest-marks topics first, prerequisites before the topics that need them, revision and a mock test before each exam
 • Goals and weekly sub-goals per subject; move, shorten or skip anything and the plan adapts instantly
 • Find past papers: Oris searches the web (official sites first) and reads the paper you pick
+
+LECTURES
+• A lecture playlist for every subject, in study order. Oris finds the best lecture per topic, or import a full-course playlist
+• A distraction-free player: timestamped notes, sticky notes on the timeline, speed, A–B loop, resume
+• Practice questions after each lecture and points for finishing lectures and beating your best score
 
 STUDY
 • Focus timer with short and long breaks, sessions and streaks
@@ -79,6 +84,7 @@ Oris helps students and early-career workers focus on study, research and paid w
 - **declarativeNetRequest**: Redirects sites on the user’s block list to the Oris “blocked” page during focus.
 - **sidePanel**: Oris’s main interface runs in Chrome’s side panel next to the page.
 - **tabs**: Reads the active tab’s title and URL so the user can save it as a research source and see whether it’s already saved.
+- **tabs** also opens the Oris lecture player in a new tab.
 - **scripting**: Injects the highlighter and reads a page’s text only when the user clicks “Research this page”, “Highlight with Oris” or a shortcut.
 - **contextMenus**: Adds “Highlight with Oris” and “Save page to Oris” to the right-click menu.
 - **search**: The New Tab search box sends the query to the user’s default search engine.

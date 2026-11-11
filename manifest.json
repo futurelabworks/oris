@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Oris – Focus for Study, Research & Earning",
   "short_name": "Oris",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Focus timer, site blocker, AI summaries, citations, income and job tracking. All in your New Tab and side panel.",
   "minimum_chrome_version": "116",
   "icons": {

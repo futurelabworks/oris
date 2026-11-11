@@ -56,7 +56,7 @@ const toasts = () => $('#toast').textContent;
 const iso = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 
 // Fresh install: Study still opens on Focus; Plan is a new tab.
-assert.equal($('#subnav').textContent, 'PlanFocusBlockerSyllabus');
+assert.equal($('#subnav').textContent, 'PlanFocusBlockerSyllabusLectures');
 assert.equal($('#subnav [aria-current="page"]').textContent, 'Focus', 'existing default kept');
 byText('#subnav button', 'Plan').click();
 await tick();

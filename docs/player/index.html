@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex">
+<title>Oris lecture player</title>
+<!-- Relay for the Oris Chrome extension's lecture player. It hosts the official YouTube IFrame
+     player and passes play/pause/seek/speed and the current time to and from the extension page
+     that embeds it. It stores nothing and only answers the extension page that opened it. -->
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  #p { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; }
+  #msg { position: fixed; inset: 0; display: grid; place-items: center; color: #aab; font: 14px system-ui, sans-serif; text-align: center; padding: 20px; }
+</style>
+</head>
+<body>
+<div id="msg">This page only works inside the Oris extension.</div>
+<div id="p"></div>
+<script>
+(function () {
+  var q = new URLSearchParams(location.hash.slice(1));
+  var videoId = q.get('v') || '';
+  var start = parseInt(q.get('t') || '0', 10) || 0;
+  var parentOrigin = q.get('o') || '';
+  // Only talk to a browser-extension page.
+  if (!/^(chrome|moz|edge)-extension:\/\/[a-z0-9-]+$/i.test(parentOrigin) || window.parent === window || !/^[A-Za-z0-9_-]{11}$/.test(videoId)) return;
+  document.getElementById('msg').remove();
+
+  var player = null;
+  var ready = false;
+  function send(m) { m.oris = 1; window.parent.postMessage(m, parentOrigin); }
+
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent || e.origin !== parentOrigin || !e.data || e.data.oris !== 1 || !player || !ready) return;
+    var a = Array.isArray(e.data.args) ? e.data.args : [];
+    switch (e.data.cmd) {
+      case 'playVideo': player.playVideo(); break;
+      case 'pauseVideo': player.pauseVideo(); break;
+      case 'seekTo': player.seekTo(Number(a[0]) || 0, true); break;
+      case 'setPlaybackRate': player.setPlaybackRate(Number(a[0]) || 1); break;
+      case 'loadVideoById':
+        if (a[0] && /^[A-Za-z0-9_-]{11}$/.test(a[0].videoId)) player.loadVideoById({ videoId: a[0].videoId, startSeconds: Number(a[0].startSeconds) || 0 });
+        break;
+    }
+  });
+
+  window.onYouTubeIframeAPIReady = function () {
+    player = new YT.Player('p', {
+      videoId: videoId,
+      playerVars: { start: start, rel: 0, iv_load_policy: 3, modestbranding: 1, playsinline: 1, origin: location.origin },
+      events: {
+        onReady: function () { ready = true; send({ type: 'ready', d: player.getDuration() || 0 }); },
+        onStateChange: function (e) { send({ type: 'state', state: e.data }); },
+        onError: function (e) { send({ type: 'error', code: e.data }); },
+      },
+    });
+    setInterval(function () {
+      if (!ready) return;
+      send({ type: 'time', t: player.getCurrentTime() || 0, d: player.getDuration() || 0, state: player.getPlayerState(), rate: player.getPlaybackRate() });
+    }, 500);
+  };
+  var s = document.createElement('script');
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>

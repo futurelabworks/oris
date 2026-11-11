@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris lecture</title>
+<link rel="icon" href="../icons/icon32.png">
+<link rel="stylesheet" href="../styles/base.css">
+<link rel="stylesheet" href="player.css">
+</head>
+<body>
+<header class="pl-top">
+  <a class="pl-brand" href="../newtab/newtab.html" title="Oris home"><img src="../icons/icon32.png" alt="" width="22" height="22"> Oris</a>
+  <p class="pl-crumbs" id="crumbs"></p>
+  <div class="pl-top-right">
+    <span class="pl-points" id="points" title="Lecture points"></span>
+    <button class="pl-btn ghost" id="btn-focus" type="button">Focus while watching</button>
+  </div>
+</header>
+<main class="pl-main">
+  <section class="pl-stage-col" aria-label="Lecture">
+    <div class="pl-stage" id="stage-wrap">
+      <div class="pl-video" id="stage"></div>
+      <div class="pl-end" id="endcard" hidden></div>
+      <div class="pl-fail" id="failcard" hidden></div>
+    </div>
+    <div class="pl-timeline" id="timeline" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+      <div class="pl-loop" id="loopband" hidden></div>
+      <div class="pl-fill" id="fill"></div>
+      <div class="pl-marks" id="marks"></div>
+    </div>
+    <div class="pl-controls">
+      <div class="pl-group">
+        <button class="pl-icon" id="btn-prev" type="button" title="Previous lecture" aria-label="Previous lecture">⏮</button>
+        <button class="pl-icon" id="btn-back" type="button" title="Back 10 seconds (J)" aria-label="Back 10 seconds">−10</button>
+        <button class="pl-icon pl-play" id="btn-play" type="button" title="Play or pause (Space)" aria-label="Play">▶</button>
+        <button class="pl-icon" id="btn-fwd" type="button" title="Forward 10 seconds (L)" aria-label="Forward 10 seconds">+10</button>
+        <button class="pl-icon" id="btn-next" type="button" title="Next lecture" aria-label="Next lecture">⏭</button>
+        <span class="pl-time" id="time">0:00 / 0:00</span>
+      </div>
+      <div class="pl-group">
+        <label class="pl-speed">Speed
+          <select id="speed" aria-label="Playback speed">
+            <option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option>
+          </select>
+        </label>
+        <button class="pl-btn ghost" id="btn-loopA" type="button" title="Loop from here (A)">Loop A</button>
+        <button class="pl-btn ghost" id="btn-loopB" type="button" title="Loop to here (B)">B</button>
+        <button class="pl-btn ghost" id="btn-pin" type="button" title="Pin a sticky note here (P)">📌 Pin</button>
+        <button class="pl-icon" id="btn-full" type="button" title="Full screen (F)" aria-label="Full screen">⛶</button>
+      </div>
+    </div>
+    <p class="pl-hint">Space play/pause · J/L ±10s · ←/→ ±5s · N note · P pin · [ ] speed · A/B loop · F full screen</p>
+  </section>
+  <aside class="pl-side">
+    <div class="pl-tabs" role="tablist">
+      <button role="tab" id="tab-notes" aria-selected="true">Notes</button>
+      <button role="tab" id="tab-next" aria-selected="false">Playlist</button>
+      <button role="tab" id="tab-quiz" aria-selected="false">Practice</button>
+    </div>
+    <div class="pl-panel" id="panel"></div>
+  </aside>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="player.js"></script>
+</body>
+</html>

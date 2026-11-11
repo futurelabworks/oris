@@ -4,6 +4,8 @@ import { PLANNER_KEY, mergePlanner } from '../lib/planner.js';
 import { EARN_KEY, mergeEarn } from '../lib/earn.js';
 import { newBadges } from '../lib/rewards.js';
 import { STUDY_KEY, mergeStudy, logEvent } from '../lib/study.js';
+import { LECTURES_KEY, mergeLectures, playerUrl } from '../lib/lectures.js';
+import * as lecturesView from './lectures.js';
 import * as planView from './plan.js';
 import * as setupView from './setup.js';
 import * as earnOverview from './earn-overview.js';
@@ -22,7 +24,7 @@ import * as bibView from './research-bib.js';
 import * as askView from './research-ask.js';
 
 const views = {
-  plan: planView, setup: setupView, focus: focusView, blocker: blockerView, syllabus: syllabusView,
+  plan: planView, setup: setupView, lectures: lecturesView, focus: focusView, blocker: blockerView, syllabus: syllabusView,
   sources: sourcesView, ask: askView, sessions: sessionsView, bibliography: bibView,
   overview: earnOverview, work: earnWork, jobs: earnJobs, skills: earnSkills, rewards: earnRewards,
   settings: settingsView, soon: soonView,
@@ -30,7 +32,7 @@ const views = {
 
 // Each mode has its own row of tools. A mode without tools shows the "coming soon" view.
 const MODES = {
-  study: [['plan', 'Plan'], ['focus', 'Focus'], ['blocker', 'Blocker'], ['syllabus', 'Syllabus']],
+  study: [['plan', 'Plan'], ['focus', 'Focus'], ['blocker', 'Blocker'], ['syllabus', 'Syllabus'], ['lectures', 'Lectures']],
   research: [['sources', 'Sources'], ['ask', 'Ask'], ['sessions', 'Sessions'], ['bibliography', 'Bibliography']],
   earn: [['overview', 'Overview'], ['work', 'Work'], ['jobs', 'Jobs'], ['skills', 'Skills'], ['rewards', 'Rewards']],
 };
@@ -73,6 +75,7 @@ const state = {
   planner: mergePlanner(null),
   earn: mergeEarn(null),
   study: mergeStudy(null),
+  lectures: mergeLectures(null),
 };
 
 // The same app runs in the side panel and inside the New Tab page.
@@ -106,6 +109,20 @@ async function saveStudy(fn, log) {
   state.study = mergeStudy(out);
   await chrome.storage.local.set({ [STUDY_KEY]: state.study });
   return state.study;
+}
+
+async function saveLectures(fn) {
+  const r = await chrome.storage.local.get(LECTURES_KEY);
+  const next = mergeLectures(r[LECTURES_KEY]);
+  fn(next);
+  state.lectures = next;
+  await chrome.storage.local.set({ [LECTURES_KEY]: next });
+  return next;
+}
+
+// Open the Oris lecture player in a new tab.
+function openPlayer({ videoId, topicId = '', syllabusId = '', start = 0 }) {
+  return chrome.tabs.create({ url: playerUrl(chrome.runtime.getURL('player/player.html'), { videoId, topicId, syllabusId, start }) });
 }
 
 async function send(msg) {
@@ -173,7 +190,7 @@ async function activeTab() {
   return tab || null;
 }
 
-const ctx = { state, saveSettings, saveSyllabi, saveStudy, send, research, planner, earn, activeTab, toast, open, el, svg, surface };
+const ctx = { state, saveSettings, saveSyllabi, saveStudy, saveLectures, openPlayer, send, research, planner, earn, activeTab, toast, open, el, svg, surface };
 
 // ---------- navigation ----------
 let current = null;
@@ -238,6 +255,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (changes[PLANNER_KEY]) { state.planner = mergePlanner(changes[PLANNER_KEY].newValue); changed.planner = true; }
   if (changes[EARN_KEY]) { state.earn = mergeEarn(changes[EARN_KEY].newValue); changed.earn = true; }
   if (changes[STUDY_KEY]) { state.study = mergeStudy(changes[STUDY_KEY].newValue); changed.study = true; }
+  if (changes[LECTURES_KEY]) { state.lectures = mergeLectures(changes[LECTURES_KEY].newValue); changed.lectures = true; }
   if (changes[EARN_KEY] || changes[PLANNER_KEY] || changes[KEYS.stats] || changes[RESEARCH_KEY]) checkBadges();
   // A focus session just finished: let the page celebrate.
   if (changes[KEYS.timer]) {
@@ -267,7 +285,7 @@ chrome.tabs.onUpdated.addListener((_id, info, tab) => {
 
 // ---------- boot ----------
 (async () => {
-  const r = await chrome.storage.local.get([KEYS.settings, KEYS.timer, KEYS.stats, KEYS.syllabi, RESEARCH_KEY, PLANNER_KEY, EARN_KEY, STUDY_KEY, 'ui:noteRequest']);
+  const r = await chrome.storage.local.get([KEYS.settings, KEYS.timer, KEYS.stats, KEYS.syllabi, RESEARCH_KEY, PLANNER_KEY, EARN_KEY, STUDY_KEY, LECTURES_KEY, 'ui:noteRequest']);
   state.settings = mergeSettings(r[KEYS.settings]);
   state.timer = mergeTimer(r[KEYS.timer]);
   state.stats = r[KEYS.stats] || { days: {} };
@@ -276,6 +294,7 @@ chrome.tabs.onUpdated.addListener((_id, info, tab) => {
   state.planner = mergePlanner(r[PLANNER_KEY]);
   state.earn = mergeEarn(r[EARN_KEY]);
   state.study = mergeStudy(r[STUDY_KEY]);
+  state.lectures = mergeLectures(r[LECTURES_KEY]);
   // Older v1 installs remembered the Study view under a different key.
   const legacy = recall('oris:view');
   if (legacy && !recall('oris:view:study') && MODES.study.some(([v]) => v === legacy)) remember('oris:view:study', legacy);
