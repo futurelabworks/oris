@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Tab</title>
+  <link rel="icon" href="../icons/icon32.png">
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="../sidepanel/sidepanel.css">
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body data-surface="newtab">
+  <!-- Idle: the home screen every New Tab opens on -->
+  <div id="idle" class="idle">
+    <form id="search" class="nt-search" role="search">
+      <input id="search-input" type="search" placeholder="Search the web" aria-label="Search the web" autocomplete="off">
+    </form>
+
+    <main class="idle-main" id="idle-main">
+      <div class="horizon-wrap">
+        <svg class="horizon" id="horizon" viewBox="0 0 600 310" aria-hidden="true">
+          <path class="hz-track" d="M40 290 A260 260 0 0 1 560 290" />
+          <path class="hz-fill" id="hz-fill" d="M40 290 A260 260 0 0 1 560 290" />
+          <line class="hz-ground" x1="0" y1="290" x2="600" y2="290" />
+          <circle class="hz-sun" id="hz-sun" r="14" cx="40" cy="290" />
+        </svg>
+        <div class="nt-clock">
+          <p class="nt-date" id="nt-date"></p>
+          <p class="nt-time" id="nt-time"></p>
+          <p class="nt-status" id="nt-status"></p>
+        </div>
+      </div>
+
+      <!-- A div, not a label: clicking near the line must not put the cursor in it. -->
+      <div class="nt-daily-wrap">
+        <input id="nt-daily" class="nt-daily" type="text" maxlength="140" placeholder="What’s your one focus today?" aria-label="Your one focus for today">
+      </div>
+
+      <div class="nt-actions" id="nt-actions"></div>
+
+      <form class="nt-note" id="nt-note" hidden>
+        <label class="visually-hidden" for="nt-note-input">Quick note</label>
+        <textarea id="nt-note-input" class="text-input" rows="2" maxlength="2000" placeholder="Quick note. Enter to save, Esc to close."></textarea>
+      </form>
+
+      <nav class="nt-modes" id="nt-modes" aria-label="Open a mode">
+        <button data-mode="study"><span>Study</span><kbd>S</kbd></button>
+        <button data-mode="research"><span>Research</span><kbd>R</kbd></button>
+        <button data-mode="earn"><span>Earn</span><kbd>E</kbd></button>
+      </nav>
+      <p class="nt-keys" id="nt-keys">Space starts or pauses focus. N writes a quick note. / searches.</p>
+      <p class="nt-focus-hint" id="nt-focus-hint" hidden>Chrome puts the cursor in the address bar on a new tab. Click anywhere on this page to use the keys above.</p>
+    </main>
+
+    <footer class="dock" id="dock" aria-label="Mini apps"></footer>
+  </div>
+
+  <!-- Burst: the arcs that open a mode -->
+  <div class="burst" id="burst" aria-hidden="true" hidden>
+    <svg viewBox="-150 -150 300 300">
+      <path class="burst-arc" d="M-120 0 A120 120 0 0 1 -60 -104" />
+      <path class="burst-arc" d="M-30 -116 A120 120 0 0 1 90 -79" />
+      <path class="burst-arc" d="M110 -48 A120 120 0 0 1 60 104" />
+      <path class="burst-arc" d="M30 116 A120 120 0 0 1 -104 60" />
+    </svg>
+  </div>
+
+  <!-- Mode: the same app as the side panel, full page -->
+  <div class="shell" id="shell" hidden>
+    <header class="top">
+      <button class="btn ghost small" id="btn-home" title="Back to home (Esc)">‹ Home</button>
+      <div class="brand">
+        <img src="../icons/icon32.png" alt="" width="22" height="22">
+        <span>Oris</span>
+      </div>
+      <button class="icon-btn" id="btn-settings" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      </button>
+    </header>
+    <nav class="modes" role="tablist" aria-label="Mode">
+      <button role="tab" data-mode="study" aria-selected="true">Study</button>
+      <button role="tab" data-mode="research" aria-selected="false">Research</button>
+      <button role="tab" data-mode="earn" aria-selected="false">Earn</button>
+    </nav>
+    <nav class="subnav" id="subnav"></nav>
+    <main id="view"></main>
+  </div>
+
+  <div id="onboarding" class="onboarding" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="../sidepanel/app.js"></script>
+  <script type="module" src="newtab.js"></script>
+</body>
+</html>

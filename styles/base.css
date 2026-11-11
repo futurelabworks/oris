@@ -1,0 +1,93 @@
+@font-face {
+  font-family: 'Bricolage';
+  src: url('../fonts/bricolage.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  --bg: #f3f5fa;
+  --surface: #ffffff;
+  --surface-2: #eceff7;
+  --ink: #17203a;
+  --muted: #5e6782;
+  --line: #dce1ec;
+  --accent: #3d4fd6;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3e7ff;
+  --break: #2f8a62;
+  --break-soft: #ddf1e7;
+  --warn: #b4431a;
+  --warn-soft: #fbe6dc;
+  --sun: #f2b55a;
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  --font: 'Bricolage', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #10152a;
+    --surface: #171e36;
+    --surface-2: #1e2643;
+    --ink: #e8ecf8;
+    --muted: #98a1bd;
+    --line: #2a3352;
+    --accent: #8c99ff;
+    --accent-ink: #10152a;
+    --accent-soft: #252e5c;
+    --break: #5cc79a;
+    --break-soft: #183a2e;
+    --warn: #f08a62;
+    --warn-soft: #3d2219;
+    --sun: #f5c676;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s;
+}
+.btn:hover { background: var(--surface-2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); background: var(--surface-2); }
+.btn.danger { color: var(--warn); }
+.btn.small { min-height: 28px; padding: 0 10px; font-size: 13px; border-radius: 8px; }
+.btn.lg { min-height: 44px; padding: 0 22px; font-size: 15px; border-radius: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

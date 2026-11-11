@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oris Privacy Policy</title>
+<meta name="description" content="How the Oris Chrome extension handles your data.">
+<style>
+  :root { --bg: #f6f7fc; --ink: #17203a; --muted: #4a5373; --accent: #3d4fd6; --line: #dfe3f0; --card: #fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #10152a; --ink: #e8ecf8; --muted: #aab2cc; --accent: #8c99ff; --line: #2a3150; --card: #171d36; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 34px; line-height: 1.15; letter-spacing: -.02em; margin: 0 0 6px; }
+  h2 { font-size: 21px; margin: 40px 0 8px; }
+  p, li { color: var(--muted); }
+  strong { color: var(--ink); }
+  a { color: var(--accent); }
+  .meta { margin: 0 0 28px; font-size: 15px; }
+  .summary { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px; }
+  .summary ul { margin: 6px 0 0; padding-left: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 10px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--ink); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  td { color: var(--muted); }
+  @media (max-width: 560px) { table, thead, tbody, tr, th, td { display: block; } thead { display: none; } td { border: 0; padding: 2px 0; } tr { border-bottom: 1px solid var(--line); padding: 10px 0; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Oris Privacy Policy</h1>
+  <p class="meta">Effective 11 November 2026 · Applies to the Oris Chrome extension, version 3.0 and later</p>
+
+  <div class="summary">
+    <strong>In short</strong>
+    <ul>
+      <li>Everything you create in Oris (your study profile, subjects, study plan, tasks, notes, focus stats, syllabi, past papers, research sources, income, jobs, skills) is stored only in your browser, on your device.</li>
+      <li>There are no accounts, no ads, no analytics and no tracking. We don’t sell or share your data.</li>
+      <li>Text leaves your device only when you use an AI feature or search for past papers. It is sent to get the answer and is not stored by Oris.</li>
+    </ul>
+  </div>
+
+  <h2>1. Data stored on your device</h2>
+  <p>Oris saves your settings, timer state, focus statistics, tasks, notes, syllabi and study plans, research projects and sources (titles, links, authors, summaries, highlights, tags and the readable text of pages you save), and your Earn data (income entries, clients, work time, job applications and skills). The study setup stores your name, whether you are at school, college or preparing for an exam, your class, board or college and course, your subjects with exam dates, and your study plan settings. Oris also keeps a log of the changes you make to your plan (for example “marked a topic done” or “moved to tomorrow”) so it can adapt the plan to you; this log stays on your device. All of it is kept with Chrome’s local extension storage on your computer. It is not sent to us. Uninstalling Oris deletes it. You can export it at any time with <em>Settings → Back up</em>.</p>
+  <p>If you add your own Groq or YouTube API key, the key is stored on your device only and is never included in backups.</p>
+
+  <h2>2. Data that leaves your device</h2>
+  <table>
+    <thead><tr><th>When</th><th>What is sent</th><th>To whom</th></tr></thead>
+    <tbody>
+      <tr><td>You use an AI feature (summarise a page, Ask your sources, read a syllabus, summarise notes) with <strong>Oris AI</strong> on and no key of your own</td><td>The text needed for that request (for example the page text, your question and the matching passages) plus a random install ID</td><td>The Oris AI server (Supabase, Mumbai region), which forwards the text to Groq to generate the answer</td></tr>
+      <tr><td>You use an AI feature with <strong>your own Groq key</strong></td><td>The same request text</td><td>Groq, directly from your browser</td></tr>
+      <tr><td>You tap <strong>Find papers for me</strong></td><td>A search phrase made of the subject name and your board, college or course (for example “GGSIPU DBMS previous year question paper pdf”) plus a random install ID. Never your name.</td><td>The Oris server (Supabase, Mumbai region), which sends the phrase to a web search provider (Serper or Brave Search)</td></tr>
+      <tr><td>You tap <strong>Use this</strong> or <strong>Open PDFs</strong> on a search result</td><td>A normal download request</td><td>The website of that result</td></tr>
+      <tr><td>You search for videos for a syllabus topic with your YouTube key</td><td>The topic as a search query</td><td>Google (YouTube Data API)</td></tr>
+      <tr><td>You type in the New Tab search box</td><td>Your search</td><td>Your default search engine, through Chrome</td></tr>
+      <tr><td>You ask Oris to read pages saved before version 1.3</td><td>A normal page request</td><td>The website of that page</td></tr>
+    </tbody>
+  </table>
+  <p>The Oris AI server does <strong>not</strong> store the text you send or the answers. Paper searches count towards the same allowance. To share the free daily allowance fairly, it keeps only a daily counter for each random install ID and for a shortened one-way hash of your IP address. These counters are deleted after 7 days. Groq processes requests under its own <a href="https://groq.com/privacy-policy/">privacy policy</a>.</p>
+  <p>You can turn AI off at any time with <em>Settings → AI → Use Oris AI</em>. Oris then uses built-in methods that run entirely on your device.</p>
+
+  <h2>3. Permissions and why Oris needs them</h2>
+  <p><strong>Access to websites</strong>: to block distracting sites during focus, hide feeds and Shorts on social sites, save and highlight pages you choose, and read a page when you click <em>Research this page</em>. Oris reads a page’s content only when you ask it to. <strong>Tabs</strong>: to know which page you are saving. <strong>Storage</strong>: to keep your data on your device. <strong>Alarms and notifications</strong>: for the timer and follow-up reminders. <strong>Side panel, context menus, scripting, search</strong>: for the side panel, the right-click “Highlight with Oris” option, highlighting, and the New Tab search box.</p>
+
+  <h2>4. What we don’t do</h2>
+  <p>We don’t collect your name, email address, browsing history or location. We don’t use analytics or advertising. We don’t sell, rent or transfer user data to third parties except as described above to provide the feature you asked for. We don’t use or transfer user data for purposes unrelated to Oris’s single purpose, or to determine creditworthiness or for lending. Oris’s use of information follows the <a href="https://developer.chrome.com/docs/webstore/program-policies/limited-use">Chrome Web Store User Data Policy, including the Limited Use requirements</a>.</p>
+
+  <h2>5. Children</h2>
+  <p>Oris is not directed at children under 13 and does not knowingly collect personal information from them.</p>
+
+  <h2>6. Changes</h2>
+  <p>If this policy changes, we will update this page and the date at the top. Significant changes will also be noted in the extension’s release notes.</p>
+
+  <h2>7. Contact</h2>
+  <p>Questions or requests: <a href="mailto:CONTACT_EMAIL">CONTACT_EMAIL</a></p>
+</main>
+</body>
+</html>

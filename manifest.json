@@ -1,0 +1,93 @@
+{
+  "manifest_version": 3,
+  "name": "Oris – Focus for Study, Research & Earning",
+  "short_name": "Oris",
+  "version": "3.0.0",
+  "description": "Focus timer, site blocker, AI summaries, citations, income and job tracking. All in your New Tab and side panel.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Open Oris",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "declarativeNetRequest",
+    "sidePanel",
+    "tabs",
+    "scripting",
+    "contextMenus",
+    "unlimitedStorage",
+    "search"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://*.instagram.com/*",
+        "*://*.facebook.com/*",
+        "*://*.x.com/*",
+        "*://*.twitter.com/*",
+        "*://*.reddit.com/*",
+        "*://*.linkedin.com/*"
+      ],
+      "js": [
+        "content/distraction.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "blocked/blocked.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "commands": {
+    "toggle-timer": {
+      "suggested_key": {
+        "default": "Alt+Shift+O"
+      },
+      "description": "Start, pause or resume the focus timer"
+    },
+    "highlight-selection": {
+      "suggested_key": {
+        "default": "Alt+Shift+H"
+      },
+      "description": "Highlight the selected text and save it to Oris"
+    },
+    "quick-note": {
+      "suggested_key": {
+        "default": "Alt+Shift+N"
+      },
+      "description": "Write a quick note for this focus session"
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab/newtab.html"
+  }
+}

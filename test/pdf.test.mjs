@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+globalThis.chrome = { runtime: { getURL: (p) => new URL('../' + p, import.meta.url).href } };
+const { pdfToText } = await import('../lib/pdf-text.js');
+const { heuristicParse } = await import('../lib/syllabus.js');
+const buf = fs.readFileSync(new URL('./fixtures/syllabus.pdf', import.meta.url));
+const file = { arrayBuffer: async () => buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) };
+const { text, pages } = await pdfToText(file);
+console.log(text);
+assert.equal(pages, 1);
+const plan = heuristicParse(text);
+console.log(JSON.stringify(plan));
+assert.equal(plan.units.length, 2);
+assert.ok(plan.units[1].topics.includes('Introduction to SQL'));
+console.log('pdf extraction: all assertions passed');

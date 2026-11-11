@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blocked by Oris</title>
+  <link rel="icon" href="../icons/icon32.png">
+  <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="blocked.css">
+</head>
+<body>
+  <main class="wrap">
+    <svg class="horizon" viewBox="0 0 320 170" aria-hidden="true">
+      <path class="track" d="M20 160 A140 140 0 0 1 300 160" />
+      <path id="arc" class="fill" d="M20 160 A140 140 0 0 1 300 160" />
+      <circle id="sun" class="sun" cx="20" cy="160" r="10" />
+      <line class="ground" x1="0" y1="160" x2="320" y2="160" />
+    </svg>
+
+    <p id="domain" class="domain"></p>
+    <h1 id="headline">This site is blocked while you focus.</h1>
+    <p id="detail" class="detail"></p>
+    <p id="task" class="task" hidden></p>
+
+    <div class="actions">
+      <button id="btn-close" class="btn primary lg">Close this tab</button>
+      <button id="btn-panel" class="btn lg">Open Oris</button>
+      <a id="btn-continue" class="btn lg" hidden>Continue to site</a>
+    </div>
+  </main>
+  <script type="module" src="blocked.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.wrap {
+  width: min(560px, 100%);
+  text-align: center;
+}
+
+.horizon { width: min(320px, 80vw); height: auto; display: block; margin: 0 auto 28px; overflow: visible; }
+.horizon .track { fill: none; stroke: var(--line); stroke-width: 6; stroke-linecap: round; }
+.horizon .fill { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.horizon .ground { stroke: var(--ink); stroke-width: 2; opacity: .18; }
+.horizon .sun { fill: var(--sun); }
+
+.domain {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 4vw, 36px);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.detail { margin: 0 auto 6px; color: var(--muted); font-size: 16px; max-width: 46ch; }
+.detail strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+.task { margin: 14px auto 0; font-size: 15px; max-width: 46ch; }
+.task span { font-weight: 600; }
+
+.actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+.actions a { text-decoration: none; }

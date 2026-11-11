@@ -1,0 +1,13 @@
+{
+  "name": "oris",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Oris Chrome extension \u2013 dev tooling for tests only. Chrome doesn't need this file.",
+  "scripts": {
+    "test": "node test/syllabus.test.mjs && node test/background.test.mjs && node test/sidepanel.test.mjs && node test/pages.test.mjs && node test/pdf.test.mjs && node test/research.test.mjs && node test/highlighter.test.mjs && node test/research-ui.test.mjs && node test/planner.test.mjs && node test/newtab.test.mjs && node test/sidepanel-12.test.mjs && node test/research13.test.mjs && node test/research13-ui.test.mjs && node test/earn.test.mjs && node test/earn-ui.test.mjs && node test/ai.test.mjs && node test/pyq.test.mjs && node test/exam-ui.test.mjs && node test/study.test.mjs && node test/plan-ui.test.mjs && node test/newtab-setup.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
