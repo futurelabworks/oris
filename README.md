@@ -1,4 +1,4 @@
-# Oris 3.1 – focus for study, research and earning
+# Oris 3.2 – focus for study, research and earning
 
 A Chrome extension (Manifest V3) that opens in Chrome's side panel.
 
@@ -44,6 +44,15 @@ A Chrome extension (Manifest V3) that opens in Chrome's side panel.
 | --- | --- |
 | Alt+Shift+O (start/pause), Alt+Shift+H (highlight), Alt+Shift+N (quick note) | Any web page. Chrome only assigns these if no other extension already uses the key. Settings → Keyboard shortcuts shows which are set and opens Chrome's shortcuts page to fix the rest. |
 | Space, N, S, R, E, / | Only the Oris New Tab page, after you click the page. Chrome always gives a new tab's address bar the keyboard first, and the page shows a reminder until you click. |
+
+**New in 3.2 (AI coach)**
+
+- **Coach on the Plan page.** Up to two tips at a time, each with a one-tap fix and "Not now". It notices when a topic keeps moving to tomorrow (split it into 2 or 3 parts), when days are too full (lighter days), when you finish early (add more), when a lecture was skipped (rewatch), and when a streak is at risk or you've been away (restart small).
+- **Split topics.** A big topic becomes "part 1 of 2", "part 2 of 2" across days. The topic is marked learned only when the last part is done.
+- **It learns from you, on your device.** Tips you accept show up more; tips you dismiss show up less, and three "Not now"s in 30 days mute that kind of tip. Turn muted tips back on in Plan settings.
+- **Your week.** A weekly review: time studied, active days, lectures, streak and a short note. "Get a personal review (AI)" writes a personal one.
+- **Reminders.** At most one a day: at your usual study time if you haven't started, or in the evening if your streak is at risk. None once today's work is done.
+- **Your data.** Every change you make is logged on your device. "Download my learning data" exports it. "Help improve Oris" (off by default) shares anonymous events (kind, day, hour, level; no names, topics or notes) once a day; for school students it needs a parent or guardian to agree first.
 
 **New in 3.1 (Lectures and the Oris player)**
 
@@ -141,6 +150,14 @@ This runs the real code against a mocked `chrome.*` API:
 - the blocked page
 - PDF extraction
 
+**Manual checklist in Chrome, version 3.2:**
+1. Reload Oris (Chrome may ask nothing new; no new permissions). Study → **Plan**. With a fresh plan the coach is quiet; it needs a few days of history.
+2. Quick test: on a Learn item use More → **Do it tomorrow** on two different days (or the same topic twice). The coach shows "“Topic” keeps moving to tomorrow" → **Split into 2 parts**. Today shows "part 1 of 2". Tick it: the topic is *not* ticked in Syllabus yet. Tick part 2 later: now it is.
+3. Click **Not now** on a tip: it disappears for 3 days. After 3 dismissals of the same kind it's muted; Plan settings → Coach lists it; click it to turn it back on.
+4. **Your week** card appears after a week of use. Click **Get a personal review (AI)** (needs Oris AI with the GROQ key, or your own key).
+5. Plan settings → Coach: switch **Reminders** on, leave today's work undone; around your usual study hour you get one notification. Click it and Oris opens.
+6. **Help improve Oris**: for a school student it shows the guardian checkbox; nothing is shared until it's ticked. **Download my learning data** saves a .json file.
+
 **Manual checklist in Chrome, version 3.1:**
 1. Make sure GitHub Pages is on (repo Settings → Pages → main, /docs). Open https://futurelabworks.github.io/oris/player/ ; it should say "This page only works inside the Oris extension".
 2. Reload Oris. Study → **Lectures**. Click **Choose** on a topic, paste any YouTube lecture link → **Use**.
@@ -170,6 +187,7 @@ This runs the real code against a mocked `chrome.*` API:
 **Server setup (Oris AI and paper search).** In Supabase → project *oris* → Edge Functions → Secrets:
 - `GROQ_API_KEY`: needed for all AI features.
 - `SERPER_API_KEY` (serper.dev, free trial credits) or `BRAVE_API_KEY` (Brave Search API): needed for **Find papers for me**. Without one, Oris shows a plain Google search link instead.
+- 3.2 adds the table `coach_events` (migration `server/supabase/migrations/20261111_coach_events.sql`, already applied to the live project). It only receives events from users who turned on "Help improve Oris".
 - `YOUTUBE_API_KEY` (Google Cloud → YouTube Data API v3, free): needed for automatic lecture search and playlist import for everyone without their own key. The free quota (10,000 units a day) covers about 90 lecture searches a day across all users, so heavy users should add their own key in Settings.
 
 **Manual checklist in Chrome, version 2.1:**

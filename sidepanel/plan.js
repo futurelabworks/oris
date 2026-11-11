@@ -4,6 +4,9 @@ import { hasAI } from '../lib/ai.js';
 import { todayKey } from '../lib/defaults.js';
 import { videoForTopic } from '../lib/lectures.js';
 import {
+  suggestions, applyTip, dismissTip, coachOf, recordDayPlan, weekKey, weekStats, reviewText, aiReview, TIP_TYPES,
+} from '../lib/coach.js';
+import {
   buildPlan, feasibility, aiTopicOrder, subjectColor, addDays, niceDay, daysBetween, IMPORTANCE, DAY_NAMES, LEVELS,
 } from '../lib/study.js';
 
@@ -27,7 +30,9 @@ export function mount(root, ctx) {
   // ---------- actions (each one is logged on this device) ----------
   async function setDone(item, done) {
     const today = todayKey();
-    if (item.kind === 'learn') {
+    // A split topic is learned when its last part is done.
+    const partsLeft = item.parts > 1 ? Array.from({ length: item.parts }, (_, i) => `learnpart:${item.topicId}:${i + 1}`).filter((k) => k !== item.key && !state.study.progress[k]).length : 0;
+    if (item.kind === 'learn' && (!item.parts || item.parts === 1 || (done && partsLeft === 0))) {
       await saveSyllabi(state.syllabi.map((y) => (y.id !== item.syllabusId ? y : { ...y, units: y.units.map((u) => ({ ...u, topics: u.topics.map((t) => (t.id === item.topicId ? { ...t, done } : t)) })) })));
     }
     await saveStudy((st) => {
@@ -35,7 +40,7 @@ export function mount(root, ctx) {
       // keep a month of daily totals
       for (const d of Object.keys(st.dayDone || {})) if (d < addDays(today, -30)) delete st.dayDone[d];
       return st;
-    }, { kind: done ? 'item.done' : 'item.undone', data: { kind: item.kind, topicId: item.topicId || null } });
+    }, { kind: done ? 'item.done' : 'item.undone', data: { kind: item.kind, topicId: item.topicId || null, minutes: item.minutes, part: item.part || 0 } });
     if (done) toast('Done. Nice work.');
   }
   const later = (item) => saveStudy((st) => { st.overrides[item.topicId] = { ...(st.overrides[item.topicId] || {}), notBefore: addDays(todayKey(), 1) }; return st; }, { kind: 'item.later', data: { kind: item.kind, topicId: item.topicId } });
@@ -107,6 +112,110 @@ export function mount(root, ctx) {
     return v
       ? el('button', { class: 'btn ghost small', onclick: () => openPlayer({ videoId: v.videoId, topicId: item.topicId, syllabusId: item.syllabusId }) }, '▶ Lecture')
       : el('button', { class: 'btn ghost small', onclick: () => open('lectures') }, 'Find lecture');
+  }
+
+  // ---------- coach ----------
+  const COACH_TIPS = 2;
+  async function acceptTip(tip, action) {
+    let focus = null;
+    let newSyllabi = null;
+    await saveStudy((st) => {
+      const res = applyTip(st, state.syllabi, tip, action, todayKey());
+      focus = res.focus;
+      if (res.syllabi !== state.syllabi) newSyllabi = res.syllabi;
+      return res.study;
+    }, { kind: 'coach.accept', data: { type: tip.type, ...(action.apply.parts ? { parts: action.apply.parts } : {}), ...(action.apply.patch && action.apply.patch.minutesPerDay ? { minutes: action.apply.patch.minutesPerDay } : {}) } });
+    if (newSyllabi) await saveSyllabi(newSyllabi);
+    if (focus) await send({ type: 'timer:start', phase: 'focus', task: focus, taskId: null });
+    toast(focus ? `Focus started: ${focus}` : 'Done. Your plan is updated.');
+  }
+  async function dismiss(tip) {
+    await saveStudy((st) => dismissTip(st, tip, todayKey()), { kind: 'coach.dismiss', data: { type: tip.type } });
+    const c = coachOf(state.study);
+    toast(c.muted[tip.type] ? 'Got it. Oris won’t suggest that kind of change again (turn it back on in Plan settings).' : 'Okay, not now.');
+  }
+
+  function coachPanel() {
+    const tips = suggestions(S(), state.syllabi, state.lectures, todayKey()).slice(0, COACH_TIPS);
+    if (!tips.length) return null;
+    return el('section', { class: 'panel coach', 'aria-label': 'Coach' },
+      el('p', { class: 'coach-label' }, 'Coach'),
+      ...tips.map((tip) => el('div', { class: `tip tip-${tip.type}` },
+        el('p', { class: 'tip-title' }, tip.title),
+        el('p', { class: 'tip-body' }, tip.body),
+        el('div', { class: 'row wrap' },
+          ...tip.actions.map((a, i) => el('button', { class: `btn small${i === 0 ? ' primary' : ''}`, onclick: () => acceptTip(tip, a) }, a.label)),
+          el('button', { class: 'btn ghost small', onclick: () => dismiss(tip) }, 'Not now')))));
+  }
+
+  let reviewBusy = false;
+  function reviewPanel() {
+    const today = todayKey();
+    const wk = weekKey(today);
+    const c = coachOf(S());
+    const saved = c.reviews[wk];
+    if (saved && saved.hidden) return null;
+    const w = weekStats(S(), state.lectures, today);
+    // Show from Sunday, or any day once there's a week of history, if there's anything to review.
+    const dow = new Date().getDay();
+    const history = Object.keys(S().dayDone || {}).length + Object.keys(S().dayPlan || {}).length;
+    if (!saved && !(dow === 0 || dow === 1) && history < 7) return null;
+    if (!w.minutes && !w.items && !saved) return null;
+    const ai = hasAI(state.settings);
+    const save = (patch, kind) => saveStudy((st) => { const cc = coachOf(st); cc.reviews = { ...cc.reviews, [wk]: { ...(cc.reviews[wk] || {}), ...patch } }; for (const k of Object.keys(cc.reviews)) if (k < addDays(wk, -56)) delete cc.reviews[k]; st.coach = cc; return st; }, kind ? { kind } : undefined);
+    return el('section', { class: 'panel review' },
+      el('div', { class: 'section-head' }, el('h2', {}, 'Your week'), el('button', { class: 'linkish', onclick: () => save({ hidden: true }) }, 'Hide')),
+      el('div', { class: 'review-stats' },
+        el('div', {}, el('strong', {}, hm(w.minutes)), el('span', {}, 'studied')),
+        el('div', {}, el('strong', {}, String(w.activeDays)), el('span', {}, 'active days')),
+        el('div', {}, el('strong', {}, String(w.lectures)), el('span', {}, 'lectures')),
+        el('div', {}, el('strong', {}, `${w.streak}`), el('span', {}, 'day streak'))),
+      el('p', { class: 'review-text' }, saved && saved.text ? saved.text : reviewText(w, S().profile.name)),
+      saved && saved.ai ? el('p', { class: 'hint small' }, 'Written by AI from your numbers.') : null,
+      ai && !(saved && saved.ai) ? el('button', {
+        class: 'btn ghost small', disabled: reviewBusy,
+        onclick: async () => {
+          reviewBusy = true; render();
+          try { const text = await aiReview(w, S().profile, state.settings); await save({ text, ai: true, at: Date.now() }, 'coach.review'); } catch (e) { toast(e.message, 'error'); }
+          reviewBusy = false; render();
+        },
+      }, reviewBusy ? 'Writing…' : 'Get a personal review (AI)') : null);
+  }
+
+  function coachSettings() {
+    const st = S();
+    const c = coachOf(st);
+    const set = (patch, kind) => saveStudy((x) => { x.coach = { ...coachOf(x), ...patch }; return x; }, { kind, data: {} });
+    const school = st.profile.level === 'school';
+    const muted = Object.keys(c.muted).filter((k) => c.muted[k]);
+    return el('div', { class: 'coach-settings' },
+      el('p', { class: 'summary-label' }, 'Coach'),
+      el('label', { class: 'toggle' }, el('span', { class: 'toggle-text' }, 'Coach tips', el('small', {}, 'Suggestions based on how your plan is going.')),
+        el('input', { type: 'checkbox', role: 'switch', checked: c.tips, onchange: (e) => set({ tips: e.target.checked }, 'coach.tips') })),
+      el('label', { class: 'toggle' }, el('span', { class: 'toggle-text' }, 'Reminders', el('small', {}, 'A notification at your usual study time, or in the evening to save a streak. At most one a day, and none once you’ve started.')),
+        el('input', { type: 'checkbox', role: 'switch', checked: c.reminders, onchange: (e) => set({ reminders: e.target.checked }, 'coach.reminders') })),
+      el('label', { class: 'toggle' }, el('span', { class: 'toggle-text' }, 'Help improve Oris', el('small', {}, 'Share anonymous study events once a day: what kind of task, the day and hour, minutes and scores. Never your name, subjects, topics, notes or anything you typed. Off by default.')),
+        el('input', { type: 'checkbox', role: 'switch', checked: c.share, onchange: (e) => set({ share: e.target.checked }, 'coach.share') })),
+      c.share && school ? el('label', { class: 'guardian' },
+        el('input', { type: 'checkbox', checked: c.guardian, onchange: (e) => set({ guardian: e.target.checked }, 'coach.guardian') }),
+        el('span', {}, 'My parent or guardian has read what is shared and agrees.')) : null,
+      c.share && school && !c.guardian ? el('p', { class: 'hint small error-text' }, 'Nothing is shared until a parent or guardian agrees.') : null,
+      muted.length ? el('p', { class: 'hint small' }, 'Tips you turned off: ', ...muted.map((k, i) => el('button', { class: 'linkish', onclick: () => saveStudy((x) => { const cc = coachOf(x); delete cc.muted[k]; cc.memory[k] = { ...(cc.memory[k] || {}), dismissed: [] }; x.coach = cc; return x; }, { kind: 'coach.unmute', data: { type: k } }) }, `${TIP_TYPES[k] || k}${i < muted.length - 1 ? ',' : ''}`)), ' (click to turn back on)') : null,
+      el('button', { class: 'btn ghost small', onclick: downloadData }, 'Download my learning data'));
+  }
+
+  function downloadData() {
+    const st = S();
+    const data = {
+      app: 'oris', kind: 'learning-data', exportedAt: new Date().toISOString(),
+      profile: { level: st.profile.level }, prefs: st.prefs, dayPlan: st.dayPlan || {}, dayDone: st.dayDone || {},
+      events: st.log, lecturePoints: state.lectures ? state.lectures.points : null,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = el('a', { href: URL.createObjectURL(blob), download: `oris-learning-data-${todayKey()}.json` });
+    document.body.append(a);
+    a.click();
+    a.remove();
   }
 
   function header(plan) {
@@ -205,6 +314,7 @@ export function mount(root, ctx) {
             ? `${hm(f.left)} of work left, ${hm(f.avail)} of study time before the exam.`
             : `Too much for the time left: ${hm(f.left)} of work, ${hm(f.avail)} available.`) : null);
       })),
+      coachSettings(),
       busy ? el('p', { class: 'batch' }, busy) : el('div', { class: 'row wrap' },
         el('button', { class: 'btn small', onclick: () => open('setup', { step: 1 }) }, 'Add or remove subjects'),
         el('button', { class: 'btn ghost small', onclick: () => open('setup', { step: 2 }) }, 'Syllabus and papers'),
@@ -231,9 +341,12 @@ export function mount(root, ctx) {
     if (!S().setupDone) { body.replaceChildren(welcome()); return; }
     const plan = buildPlan(S(), state.syllabi, todayKey());
     const names = topicIndex();
+    if (!(S().dayPlan || {})[plan.today]) saveStudy((st) => recordDayPlan(st, state.syllabi, plan.today));
     body.replaceChildren(...[
       header(plan),
       ...plan.warnings.map((w) => el('p', { class: 'notice' }, w.text)),
+      coachPanel(),
+      reviewPanel(),
       todayPanel(plan, names),
       goalsPanel(plan),
       upcomingPanel(plan, names),

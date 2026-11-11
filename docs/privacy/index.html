@@ -29,7 +29,7 @@
 <body>
 <main>
   <h1>Oris Privacy Policy</h1>
-  <p class="meta">Effective 11 November 2026 · Applies to the Oris Chrome extension, version 3.1 and later</p>
+  <p class="meta">Effective 11 November 2026 · Applies to the Oris Chrome extension, version 3.2 and later</p>
 
   <div class="summary">
     <strong>In short</strong>
@@ -41,7 +41,7 @@
   </div>
 
   <h2>1. Data stored on your device</h2>
-  <p>Oris saves your settings, timer state, focus statistics, tasks, notes, syllabi and study plans, research projects and sources (titles, links, authors, summaries, highlights, tags and the readable text of pages you save), and your Earn data (income entries, clients, work time, job applications and skills). The study setup stores your name, whether you are at school, college or preparing for an exam, your class, board or college and course, your subjects with exam dates, and your study plan settings. Lecture notes, watch progress, practice scores and points are stored the same way. Oris also keeps a log of the changes you make to your plan (for example “marked a topic done” or “moved to tomorrow”) so it can adapt the plan to you; this log stays on your device. All of it is kept with Chrome’s local extension storage on your computer. It is not sent to us. Uninstalling Oris deletes it. You can export it at any time with <em>Settings → Back up</em>.</p>
+  <p>Oris saves your settings, timer state, focus statistics, tasks, notes, syllabi and study plans, research projects and sources (titles, links, authors, summaries, highlights, tags and the readable text of pages you save), and your Earn data (income entries, clients, work time, job applications and skills). The study setup stores your name, whether you are at school, college or preparing for an exam, your class, board or college and course, your subjects with exam dates, and your study plan settings. Lecture notes, watch progress, practice scores and points are stored the same way. Oris also keeps a log of the changes you make to your plan (for example “marked a topic done” or “moved to tomorrow”) so it can adapt the plan to you. The AI coach uses this log, on your device, to choose which tips to show and to write your weekly review. You can download it with <em>Plan settings → Coach → Download my learning data</em>. All of it is kept with Chrome’s local extension storage on your computer. It is not sent to us. Uninstalling Oris deletes it. You can export it at any time with <em>Settings → Back up</em>.</p>
   <p>If you add your own Groq or YouTube API key, the key is stored on your device only and is never included in backups.</p>
 
   <h2>2. Data that leaves your device</h2>
@@ -55,6 +55,8 @@
       <tr><td>You use <strong>Find lectures</strong> or import a playlist without your own YouTube key</td><td>The topic and subject as a search phrase, or the playlist ID, plus a random install ID</td><td>The Oris server, which asks the YouTube Data API</td></tr>
       <tr><td>You watch a lecture in the Oris player</td><td>A normal request to play that video</td><td>YouTube, through its embedded player, which runs inside a small Oris page on GitHub Pages (futurelabworks.github.io). That page stores nothing. YouTube’s <a href="https://policies.google.com/privacy">privacy policy</a> applies to the video, including its ads.</td></tr>
       <tr><td>You search for videos for a syllabus topic with your YouTube key</td><td>The topic as a search query</td><td>Google (YouTube Data API)</td></tr>
+      <tr><td>You turn on <strong>Help improve Oris</strong> (off by default; school students also need a parent or guardian to agree in the app)</td><td>Once a day, anonymous events from your plan log: the kind of action (for example “item done” or “tip dismissed”), the day and hour, your level (school, college or exam), and numbers such as minutes. Never your name, subjects, topics, notes or install ID; the install ID is replaced by a one-way hash.</td><td>The Oris server (Supabase, Mumbai region), stored to improve the coach and study plans. Turn it off at any time in Plan settings; to have stored events deleted, contact us.</td></tr>
+      <tr><td>You ask for <strong>a personal review (AI)</strong></td><td>Your week’s totals (minutes, days, lectures, streak, completion), the name you entered in setup and your level</td><td>The Oris AI server and Groq, as for other AI features</td></tr>
       <tr><td>You type in the New Tab search box</td><td>Your search</td><td>Your default search engine, through Chrome</td></tr>
       <tr><td>You ask Oris to read pages saved before version 1.3</td><td>A normal page request</td><td>The website of that page</td></tr>
     </tbody>
@@ -63,7 +65,7 @@
   <p>You can turn AI off at any time with <em>Settings → AI → Use Oris AI</em>. Oris then uses built-in methods that run entirely on your device.</p>
 
   <h2>3. Permissions and why Oris needs them</h2>
-  <p><strong>Access to websites</strong>: to block distracting sites during focus, hide feeds and Shorts on social sites, save and highlight pages you choose, and read a page when you click <em>Research this page</em>. Oris reads a page’s content only when you ask it to. <strong>Tabs</strong>: to know which page you are saving. <strong>Storage</strong>: to keep your data on your device. <strong>Alarms and notifications</strong>: for the timer and follow-up reminders. <strong>Side panel, context menus, scripting, search</strong>: for the side panel, the right-click “Highlight with Oris” option, highlighting, and the New Tab search box.</p>
+  <p><strong>Access to websites</strong>: to block distracting sites during focus, hide feeds and Shorts on social sites, save and highlight pages you choose, and read a page when you click <em>Research this page</em>. Oris reads a page’s content only when you ask it to. <strong>Tabs</strong>: to know which page you are saving. <strong>Storage</strong>: to keep your data on your device. <strong>Alarms and notifications</strong>: for the timer, follow-up reminders and the study coach’s reminder (at most one a day; you can turn it off). <strong>Side panel, context menus, scripting, search</strong>: for the side panel, the right-click “Highlight with Oris” option, highlighting, and the New Tab search box.</p>
 
   <h2>4. What we don’t do</h2>
   <p>We don’t collect your name, email address, browsing history or location. We don’t use analytics or advertising. We don’t sell, rent or transfer user data to third parties except as described above to provide the feature you asked for. We don’t use or transfer user data for purposes unrelated to Oris’s single purpose, or to determine creditworthiness or for lending. Oris’s use of information follows the <a href="https://developer.chrome.com/docs/webstore/program-policies/limited-use">Chrome Web Store User Data Policy, including the Limited Use requirements</a>.</p>

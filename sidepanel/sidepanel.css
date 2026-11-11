@@ -811,3 +811,17 @@ details.day .plan-list { margin-bottom: 10px; }
 .lec-opt strong { font-size: 12px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .lec-link { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-top: 8px; }
 .lec-settings summary { cursor: pointer; font-weight: 700; }
+
+/* ---------- Coach (3.2) ---------- */
+.coach { border-color: color-mix(in srgb, var(--accent) 35%, transparent); background: linear-gradient(180deg, var(--accent-soft), var(--surface) 70%); }
+.coach-label { margin: 0 0 8px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.tip + .tip { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.tip-title { margin: 0 0 4px; font-weight: 700; font-size: 14px; }
+.tip-body { margin: 0 0 10px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.review-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 4px 0 10px; }
+.review-stats div { display: grid; gap: 1px; padding: 8px 6px; border-radius: 10px; background: var(--surface-2); text-align: center; }
+.review-stats strong { font-size: 16px; }
+.review-stats span { font-size: 11px; color: var(--muted); }
+.review-text { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+.coach-settings { margin: 6px 0 12px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+.guardian { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; padding: 8px 10px; border-radius: 10px; background: var(--warn-soft); }

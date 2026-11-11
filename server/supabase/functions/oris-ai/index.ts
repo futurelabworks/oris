@@ -13,7 +13,7 @@ const LIMIT_INSTALL = Number(Deno.env.get('ORIS_LIMIT_INSTALL') ?? 30);
 const LIMIT_IP = Number(Deno.env.get('ORIS_LIMIT_IP') ?? 60);
 const LIMIT_GLOBAL = Number(Deno.env.get('ORIS_LIMIT_GLOBAL') ?? 2000);
 const MAX_CHARS = 26000;
-const TASKS = new Set(['summary', 'syllabus', 'ask', 'notes', 'pyq', 'practice', 'plan', 'quiz', 'search', 'yt']);
+const TASKS = new Set(['summary', 'syllabus', 'ask', 'notes', 'pyq', 'practice', 'plan', 'quiz', 'coach', 'search', 'yt', 'events']);
 
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
 
@@ -108,6 +108,25 @@ async function youtube(action: string, q: string, id: string, lang: string) {
   return { videos: await details(ids) };
 }
 
+// ---- anonymous study events (task "events", opt-in only) ----
+const KIND_RE = /^[a-z]+(\.[a-z]+)?$/;
+// deno-lint-ignore no-explicit-any
+function cleanEvent(e: any, installHash: string) {
+  if (!e || typeof e.kind !== 'string' || !KIND_RE.test(e.kind) || e.kind.length > 32) return null;
+  if (typeof e.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(e.day)) return null;
+  const hour = Number(e.hour);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return null;
+  const level = ['school', 'college', 'competitive'].includes(e.level) ? e.level : '';
+  const data: Record<string, number | boolean | string> = {};
+  for (const [k, v] of Object.entries(e.data ?? {}).slice(0, 8)) {
+    if (!/^[a-zA-Z]{1,16}$/.test(k)) continue;
+    if (typeof v === 'number' && Number.isFinite(v) && Math.abs(v) < 1e6) data[k] = v;
+    else if (typeof v === 'boolean') data[k] = v;
+    else if (typeof v === 'string' && /^[a-z]{1,12}$/.test(v)) data[k] = v;
+  }
+  return { install_hash: installHash, kind: e.kind, day: e.day, hour, level, data };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return reply(405, { error: 'POST only' });
@@ -115,13 +134,14 @@ Deno.serve(async (req) => {
   const install = req.headers.get('x-oris-install') ?? '';
   if (!/^[a-f0-9-]{36}$/i.test(install)) return reply(400, { error: 'Missing install id.' });
 
-  let body: { task?: string; query?: string; action?: string; id?: string; lang?: string; messages?: { role: string; content: string }[]; temperature?: number };
+  let body: { task?: string; query?: string; action?: string; id?: string; lang?: string; events?: unknown[]; messages?: { role: string; content: string }[]; temperature?: number };
   try { body = await req.json(); } catch { return reply(400, { error: 'Bad JSON.' }); }
   const task = String(body.task);
   if (!TASKS.has(task)) return reply(400, { error: 'Bad request.' });
 
   const isSearch = task === 'search';
   const isYt = task === 'yt';
+  const isEvents = task === 'events';
   const query = isSearch ? String(body.query ?? '').replace(/\s+/g, ' ').trim().slice(0, 200) : '';
   const messages = Array.isArray(body.messages) ? body.messages.slice(0, 3) : [];
   const action = String(body.action ?? '');
@@ -130,6 +150,8 @@ Deno.serve(async (req) => {
   if (isSearch) {
     if (!SERPER_KEY && !BRAVE_KEY) return reply(503, { error: 'Paper search isn’t set up yet.', code: 'search_not_configured' });
     if (query.length < 3) return reply(400, { error: 'Bad query.' });
+  } else if (isEvents) {
+    if (!Array.isArray((body as { events?: unknown[] }).events)) return reply(400, { error: 'Bad request.' });
   } else if (isYt) {
     if (!YT_KEY) return reply(503, { error: 'Lecture search isn’t set up yet. Add your own YouTube key in Settings, or paste video links.', code: 'yt_not_configured' });
     if (!['search', 'playlists', 'playlist'].includes(action)) return reply(400, { error: 'Bad request.' });
@@ -152,6 +174,17 @@ Deno.serve(async (req) => {
     return reply(429, { error: take === 'global' ? 'Oris AI is very busy today. Try again tomorrow, or add your own free Groq key in Settings.' : 'You’ve used today’s free Oris AI requests. They reset at 5:30 am IST, or add your own free Groq key in Settings.', code: 'limit_' + take });
   }
   const left = String(take).split(':')[1] ?? '';
+
+  if (isEvents) {
+    const hash = await sha('install:' + install);
+    // deno-lint-ignore no-explicit-any
+    const rows = ((body as any).events as unknown[]).slice(0, 500).map((e) => cleanEvent(e, hash)).filter(Boolean);
+    if (rows.length) {
+      const { error: insErr } = await db.from('coach_events').insert(rows);
+      if (insErr) return reply(500, { error: 'Couldn’t save.' });
+    }
+    return reply(200, { saved: rows.length }, { 'x-oris-left': left });
+  }
 
   if (isYt) {
     try {
@@ -176,7 +209,7 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       model: MODEL,
       temperature: Math.min(Math.max(Number(body.temperature ?? 0.2), 0), 1),
-      max_tokens: ['practice', 'pyq', 'plan', 'quiz'].includes(task) ? 2500 : 1500,
+      max_tokens: ['practice', 'pyq', 'plan', 'quiz'].includes(task) ? 2500 : task === 'coach' ? 600 : 1500,
       response_format: { type: 'json_object' },
       messages,
     }),

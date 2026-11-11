@@ -1,7 +1,7 @@
 # Oris: Chrome Web Store listing (copy and paste)
 
 ## Package
-Upload `oris-3.1.0.zip`. It contains only what Chrome needs, with no tests and no dev files.
+Upload `oris-3.2.0.zip`. It contains only what Chrome needs, with no tests and no dev files.
 
 ## Store listing tab
 
@@ -22,6 +22,11 @@ STUDY PLAN
 • Oris plans every day up to your exams, with most-asked and highest-marks topics first, prerequisites before the topics that need them, revision and a mock test before each exam
 • Goals and weekly sub-goals per subject; move, shorten or skip anything and the plan adapts instantly
 • Find past papers: Oris searches the web (official sites first) and reads the paper you pick
+
+AI COACH
+• Notices when a topic keeps slipping and splits it into smaller parts, lightens overfull days, or adds more when you finish early
+• Learns from the tips you accept or dismiss, on your device
+• A weekly review of your study and at most one gentle reminder a day
 
 LECTURES
 • A lecture playlist for every subject, in study order. Oris finds the best lecture per topic, or import a full-course playlist
@@ -79,8 +84,8 @@ Oris helps students and early-career workers focus on study, research and paid w
 **Permission justifications:**
 - **storage**: Saves the user’s tasks, notes, timer, research sources and Earn data on their device.
 - **unlimitedStorage**: Saved research sources keep the page text for Ask and summaries, which can exceed the default 10 MB limit.
-- **alarms**: Ends focus and break sessions on time and checks job follow-up dates, even when the side panel is closed.
-- **notifications**: Tells the user when a session ends and when a job follow-up is due.
+- **alarms**: Ends focus and break sessions on time and checks job follow-up dates and the study coach reminder, even when the side panel is closed.
+- **notifications**: Tells the user when a session ends and when a job follow-up is due, and sends at most one study reminder a day (can be turned off).
 - **declarativeNetRequest**: Redirects sites on the user’s block list to the Oris “blocked” page during focus.
 - **sidePanel**: Oris’s main interface runs in Chrome’s side panel next to the page.
 - **tabs**: Reads the active tab’s title and URL so the user can save it as a research source and see whether it’s already saved.
@@ -93,7 +98,8 @@ Oris helps students and early-career workers focus on study, research and paid w
 
 **Data usage** (tick these):
 - ✅ **Website content**: page text is sent for AI summaries or Ask only when the user asks.
-- Leave everything else unticked: personally identifiable information, health, financial and payment information (Earn entries stay on the device and are never transmitted), authentication, personal communications, location, web history and user activity.
+- ✅ **User activity**: only if the user turns on “Help improve Oris” (off by default), anonymous study-plan events (action kind, day, hour, level) are sent once a day. No names, topics or notes.
+- Leave everything else unticked: personally identifiable information, health, financial and payment information (Earn entries stay on the device and are never transmitted), authentication, personal communications, location and web history.
 
 Certify all three:
 - ✅ I do not sell or transfer user data to third parties, outside of the approved use cases

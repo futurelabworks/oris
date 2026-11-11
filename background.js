@@ -9,6 +9,9 @@ import { extractFromTab } from './lib/extract.js';
 import { textKey } from './lib/source-text.js';
 import { EARN_KEY, mergeEarn, applyEarnOp } from './lib/earn.js';
 import { PLANNER_KEY, mergePlanner, applyPlannerOp } from './lib/planner.js';
+import { STUDY_KEY, mergeStudy, logEvent } from './lib/study.js';
+import { coachOf, recordDayPlan, reminderNow, sanitizeEvents, canShare } from './lib/coach.js';
+import { ORIS_AI_URL, installId } from './lib/ai.js';
 
 const ALARM_END = 'oris-phase-end';
 const ALARM_TICK = 'oris-tick';
@@ -278,6 +281,41 @@ async function earnOp(op, args) {
 }
 
 const ALARM_FOLLOWUP = 'oris-followups';
+const ALARM_COACH = 'oris-coach';
+
+// Every 30 minutes: remember today's planned minutes, send at most one coach reminder,
+// and (only if the student opted in) share anonymous study events once a day.
+async function coachTick(now = Date.now()) {
+  const r = await chrome.storage.local.get([STUDY_KEY, KEYS.syllabi]);
+  if (!r[STUDY_KEY]) return;
+  const study = mergeStudy(r[STUDY_KEY]);
+  if (!study.setupDone) return;
+  const syllabi = r[KEYS.syllabi] || [];
+  const today = todayKey(new Date(now));
+  const before = JSON.stringify(study.dayPlan || {});
+  recordDayPlan(study, syllabi, today);
+  let changed = JSON.stringify(study.dayPlan) !== before;
+  const rem = reminderNow(study, syllabi, now);
+  if (rem) {
+    const c = coachOf(study);
+    c.notified = { [today]: [...(c.notified[today] || []), rem.kind] };
+    study.coach = c;
+    logEvent(study, 'coach.remind', { usual: rem.kind === 'usual' });
+    changed = true;
+    chrome.notifications.create(ALARM_COACH, { type: 'basic', iconUrl: chrome.runtime.getURL('icons/icon128.png'), title: rem.title, message: rem.message, priority: 1 });
+  }
+  const c = coachOf(study);
+  if (canShare(study) && now - (c.uploadedAt || 0) > 20 * 3600e3) {
+    const events = sanitizeEvents(study.log, { since: c.uploadedAt || 0, level: study.profile.level });
+    if (events.length) {
+      try {
+        const res = await fetch(ORIS_AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-oris-install': await installId() }, body: JSON.stringify({ task: 'events', events }) });
+        if (res.ok) { c.uploadedAt = now; study.coach = c; changed = true; }
+      } catch { /* try again next time */ }
+    }
+  }
+  if (changed) await chrome.storage.local.set({ [STUDY_KEY]: study });
+}
 
 // Once a day per application: remind about follow-ups that are due.
 async function checkFollowUps() {
@@ -415,10 +453,12 @@ chrome.runtime.onInstalled.addListener((details) => serial(async () => {
 
 chrome.runtime.onStartup.addListener(() => serial(reconcile));
 chrome.alarms.create(ALARM_FOLLOWUP, { periodInMinutes: 60, delayInMinutes: 1 });
+chrome.alarms.create(ALARM_COACH, { periodInMinutes: 30, delayInMinutes: 2 });
 
 chrome.alarms.onAlarm.addListener((alarm) => serial(async () => {
   if (alarm.name === ALARM_END) return completeCurrent();
   if (alarm.name === ALARM_FOLLOWUP) return checkFollowUps();
+  if (alarm.name === ALARM_COACH) return coachTick();
   if (alarm.name === ALARM_TICK) {
     const { timer } = await load();
     if (timer.status === 'running' && timer.endsAt <= Date.now()) return completeCurrent();
@@ -426,6 +466,13 @@ chrome.alarms.onAlarm.addListener((alarm) => serial(async () => {
     return updateBadge(timer);
   }
 }));
+
+// A coach reminder opens Oris on a New Tab.
+if (chrome.notifications.onClicked) {
+  chrome.notifications.onClicked.addListener((id) => {
+    if (id === ALARM_COACH) { chrome.tabs.create({}); chrome.notifications.clear(id); }
+  });
+}
 
 chrome.notifications.onButtonClicked.addListener((id) => serial(async () => {
   if (id !== NOTIF_ID) return;
