@@ -185,7 +185,7 @@ This runs the real code against a mocked `chrome.*` API:
 6. Exam prep → Mock test → Topics: **Whole syllabus**, 5 questions → **Start mock test**. Close and reopen the panel: the timer is still running. Then **Finish and mark** → mark each → **Save result**. Topics you missed show **Revise**.
 
 **Server setup (Oris AI and paper search).** In Supabase → project *oris* → Edge Functions → Secrets:
-- `GROQ_API_KEY`: needed for all AI features.
+- `NVIDIA_API_KEY` (build.nvidia.com → Generate API Key): used for all AI features when set (model `nvidia/nemotron-3.5-lightning-30b-a3b`, change with `ORIS_MODEL`). Otherwise `GROQ_API_KEY` is used.
 - `SERPER_API_KEY` (serper.dev, free trial credits) or `BRAVE_API_KEY` (Brave Search API): needed for **Find papers for me**. Without one, Oris shows a plain Google search link instead.
 - 3.2 adds the table `coach_events` (migration `server/supabase/migrations/20261111_coach_events.sql`, already applied to the live project). It only receives events from users who turned on "Help improve Oris".
 - `YOUTUBE_API_KEY` (Google Cloud → YouTube Data API v3, free): needed for automatic lecture search and playlist import for everyone without their own key. The free quota (10,000 units a day) covers about 90 lecture searches a day across all users, so heavy users should add their own key in Settings.

@@ -1,4 +1,4 @@
-// Oris AI proxy: forwards a limited chat-completion request to Groq with the server's key,
+// Oris AI proxy: forwards a limited chat-completion request to NVIDIA (if NVIDIA_API_KEY is set) or Groq with the server's key,
 // and (task "search") runs a web search for past papers with the server's search key.
 // Users never see the keys. Each install, each IP and the whole service have a daily cap.
 // Nothing about the request text is stored; only daily counters (install id, hashed IP).
@@ -8,7 +8,11 @@ const GROQ_KEY = Deno.env.get('GROQ_API_KEY') ?? '';
 const SERPER_KEY = Deno.env.get('SERPER_API_KEY') ?? '';
 const BRAVE_KEY = Deno.env.get('BRAVE_API_KEY') ?? '';
 const YT_KEY = Deno.env.get('YOUTUBE_API_KEY') ?? '';
-const MODEL = Deno.env.get('ORIS_MODEL') ?? 'llama-3.1-8b-instant';
+const NVIDIA_KEY = Deno.env.get('NVIDIA_API_KEY') ?? '';
+const USE_NVIDIA = !!NVIDIA_KEY;
+const AI_KEY = USE_NVIDIA ? NVIDIA_KEY : GROQ_KEY;
+const AI_URL = USE_NVIDIA ? 'https://integrate.api.nvidia.com/v1/chat/completions' : 'https://api.groq.com/openai/v1/chat/completions';
+const MODEL = Deno.env.get('ORIS_MODEL') ?? (USE_NVIDIA ? 'nvidia/nemotron-3.5-lightning-30b-a3b' : 'llama-3.1-8b-instant');
 const LIMIT_INSTALL = Number(Deno.env.get('ORIS_LIMIT_INSTALL') ?? 30);
 const LIMIT_IP = Number(Deno.env.get('ORIS_LIMIT_IP') ?? 60);
 const LIMIT_GLOBAL = Number(Deno.env.get('ORIS_LIMIT_GLOBAL') ?? 2000);
@@ -157,7 +161,7 @@ Deno.serve(async (req) => {
     if (!['search', 'playlists', 'playlist'].includes(action)) return reply(400, { error: 'Bad request.' });
     if (action === 'playlist' ? !/^[A-Za-z0-9_-]{10,64}$/.test(ytId) : ytQuery.length < 2) return reply(400, { error: 'Bad request.' });
   } else {
-    if (!GROQ_KEY) return reply(503, { error: 'Oris AI isn’t set up yet.', code: 'not_configured' });
+    if (!AI_KEY) return reply(503, { error: 'Oris AI isn’t set up yet.', code: 'not_configured' });
     if (!messages.length) return reply(400, { error: 'Bad request.' });
     for (const m of messages) {
       if (!['system', 'user'].includes(m?.role) || typeof m.content !== 'string') return reply(400, { error: 'Bad message.' });
@@ -203,21 +207,36 @@ Deno.serve(async (req) => {
     }
   }
 
-  const groq = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const payload: Record<string, unknown> = {
+    model: MODEL,
+    temperature: Math.min(Math.max(Number(body.temperature ?? 0.2), 0), 1),
+    max_tokens: ['practice', 'pyq', 'plan', 'quiz'].includes(task) ? 2500 : task === 'coach' ? 600 : 1500,
+    response_format: { type: 'json_object' },
+    messages,
+  };
+  if (USE_NVIDIA) payload.chat_template_kwargs = { enable_thinking: false };
+  const call = () => fetch(AI_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_KEY}` },
-    body: JSON.stringify({
-      model: MODEL,
-      temperature: Math.min(Math.max(Number(body.temperature ?? 0.2), 0), 1),
-      max_tokens: ['practice', 'pyq', 'plan', 'quiz'].includes(task) ? 2500 : task === 'coach' ? 600 : 1500,
-      response_format: { type: 'json_object' },
-      messages,
-    }),
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${AI_KEY}` },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(55000),
   });
-  if (groq.status === 429) return reply(429, { error: 'Oris AI is busy. Try again in a minute.', code: 'busy' });
-  if (!groq.ok) return reply(502, { error: `The AI service returned ${groq.status}. Try again.` });
-  const data = await groq.json();
-  const content = data?.choices?.[0]?.message?.content ?? '';
+  let ai: Response;
+  try {
+    ai = await call();
+    // If the model doesn't accept JSON mode, ask again without it (the prompt still asks for JSON).
+    if (ai.status === 400 && USE_NVIDIA) { delete payload.response_format; ai = await call(); }
+  } catch {
+    return reply(504, { error: 'The AI service took too long. Try again.' });
+  }
+  if (ai.status === 429) return reply(429, { error: 'Oris AI is busy. Try again in a minute.', code: 'busy' });
+  if (!ai.ok) return reply(502, { error: `The AI service returned ${ai.status}. Try again.` });
+  const data = await ai.json();
+  let content = String(data?.choices?.[0]?.message?.content ?? '');
+  // Some models wrap JSON in fences or add text around it: keep just the JSON object.
+  content = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  const a = content.indexOf('{'), b = content.lastIndexOf('}');
+  if (a > 0 || (b >= 0 && b < content.length - 1)) { if (a >= 0 && b > a) content = content.slice(a, b + 1); }
   if (Math.random() < 0.01) db.rpc('oris_cleanup').then(() => {}, () => {});
   return reply(200, { content }, { 'x-oris-left': left });
 });
